@@ -29,19 +29,21 @@ def simulacao_diferencas_finitas(nx, ny, v1, v2, v3, v4, ni_max, limite_erro):
     ni = 0
     erro = float('inf')
 
+    # Inicializa listas para armazenar resultados ao longo das iterações
+    erros = []
+
     # Realiza iterações do método de diferenças finitas até que o erro seja abaixo do limite
     while ni < ni_max and erro > limite_erro:
         v_novo = np.copy(v)
         for i in range(1, nx-1):
             for j in range(1, ny-1):
                 v_novo[i, j] = 0.25 * (v[i+1, j] + v[i-1, j] + v[i, j+1] + v[i, j-1])
-                if(i == 1 and j == 1):
-                    print(v_novo[i, j])
         ni += 1
         erro = calcular_erro(v, v_novo)
         v = np.copy(v_novo)
-
-    return v, ni, erro
+# Armazena o erro para análise posterior
+        erros.append(erro)
+    return v, ni, erros
 
 # Parâmetros para a simulação
 nx = 70
@@ -54,16 +56,25 @@ ni_max = 10000  # Número máximo de iterações
 limite_erro = 0.01  # Limite de erro
 
 # Realiza a simulação de diferenças finitas
-resultado, iteracoes, erro_final = simulacao_diferencas_finitas(nx, ny, v1, v2, v3, v4, ni_max, limite_erro)
+resultado, iteracoes, erros = simulacao_diferencas_finitas(nx, ny, v1, v2, v3, v4, ni_max, limite_erro)
 
 # Imprime os resultados
 print("Número de Iterações:", iteracoes)
-print("Erro Final:", erro_final)
+print("Erro Final:", erros[-1])
 
-# Plotagem
+# Plotagem do mapa escalar de tensão
 plt.figure(1)
 hContour = plt.contourf(resultado, cmap='viridis')
 hColorbar = plt.colorbar()
 plt.ylabel('Potencial Eletrico (V)')
 plt.title('Simulação por Diferenças Finitas')
+plt.show()
+# Plotagem do gráfico de erro em função do número de iterações
+plt.subplot(1, 2, 2)
+plt.plot(range(1, iteracoes + 1), erros, linestyle='-', color='b')
+plt.xlabel('Número de Iterações')
+plt.ylabel('Erro Médio')
+plt.title('Variação do Erro ao Longo das Iterações')
+
+plt.tight_layout()
 plt.show()
